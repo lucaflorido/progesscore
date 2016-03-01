@@ -171,6 +171,11 @@ public class UserDao {
 				TblUser tu = (TblUser)users.get(0);
 				User u = new User();
 				u.convertFromTable(tu);
+                if (u.getCode() == null || u.getCode().isEmpty() == true){
+					this.saveUpdate(u);
+					u = getSingleUserVO(u.getIduser());
+				}
+				
 				new DocumentDao().checkExpiredDoxuments(u);
 				if (u.getActive() == true){
 					obj =  new GECOSuccess(u);
@@ -297,9 +302,9 @@ public class UserDao {
 		}finally{
 			session.close();
 		}
-		if (HibernateUtils.getUserFromSession(request).getIduser() == iduser){
+		/*if (HibernateUtils.getUserFromSession(request).getIduser() == iduser){
 			sessionhttp.setAttribute("user",new Gson().toJson(getSingleUserVO(iduser)));
-		}
+		}*/
 		return iduser;
 	}
 	/**
@@ -347,6 +352,27 @@ public class UserDao {
 			session.close();
 		}
 	}
+	private static TblUser getSingleTblUserByCode(String code){
+		Session session = HibernateUtils.getSessionFactory().openSession();
+		try{
+			Criteria cr = session.createCriteria(TblUser.class,"user");
+			cr.add(Restrictions.eq("code", code));
+			cr.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+			List users = cr.list();
+			if (users.size() > 0){
+				return (TblUser)users.get(0);
+			}else{
+			    return new TblUser();
+			}
+		}catch(Exception e){
+			System.err.println("ERROR IN LIST!!!!!!");
+			e.printStackTrace();
+			return null;
+			
+		}finally{
+			session.close();
+		}
+	}
 	public User getSingleUserVO(int iduser){
 		TblUser tbluser = getSingleUser(iduser);
 		User user = new User();
@@ -355,6 +381,12 @@ public class UserDao {
 	}
 	public User getSingleUserVO(String code){
 		TblUser tbluser = getSingleUser(code);
+		User user = new User();
+		user.convertFromTable(tbluser);
+		return user;
+	}
+	public static User getSingleUserVOByCode(String code){
+		TblUser tbluser = getSingleTblUserByCode(code);
 		User user = new User();
 		user.convertFromTable(tbluser);
 		return user;

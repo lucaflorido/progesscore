@@ -18,38 +18,38 @@ import com.google.gson.Gson;
 public class UtilService {
 	@POST
 	@Path("prodbasicprice/percentage")
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String productBasicPrice(@FormParam("prices") String prices){
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON) 
+	public String productBasicPrice( String data){
 		Gson g = new Gson();
-		ProductBasicPricesCalculation p = g.fromJson(prices,ProductBasicPricesCalculation.class);
+		ProductBasicPricesCalculation p = g.fromJson(data,ProductBasicPricesCalculation.class);
 		return g.toJson(new UtilDao().calculateBasicPricesProduct(p,false));
 	}
 	@POST
 	@Path("prodbasicprice/sellprice")
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String productBasicSellPrice(@FormParam("prices") String prices){
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON) 
+	public String productBasicSellPrice( String data){
 		Gson g = new Gson();
-		ProductBasicPricesCalculation p = g.fromJson(prices,ProductBasicPricesCalculation.class);
+		ProductBasicPricesCalculation p = g.fromJson(data,ProductBasicPricesCalculation.class);
 		return g.toJson(new UtilDao().calculateBasicPricesProduct(p,true));
 	}
 	@POST
 	@Path("prodbasicprice/endprice")
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String productBasicEndPrice(@FormParam("prices") String prices){
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON) 
+	public String productBasicEndPrice( String data){
 		Gson g = new Gson();
-		ProductBasicPricesCalculation p = g.fromJson(prices,ProductBasicPricesCalculation.class);
+		ProductBasicPricesCalculation p = g.fromJson(data,ProductBasicPricesCalculation.class);
 		return g.toJson(new UtilDao().calculateEndPriceProduct(p));
 	}
 	@POST
 	@Path("prodbasicprice/list")
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String productBasicListPrice(@FormParam("product") String product){
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON) 
+	public String productBasicListPrice(String data){
 		Gson g = new Gson();
-		Product p = g.fromJson(product,Product.class);
+		Product p = g.fromJson(data,Product.class);
 		return g.toJson(new UtilDao().calculateProductListPrices(p));
 	}
 	@POST

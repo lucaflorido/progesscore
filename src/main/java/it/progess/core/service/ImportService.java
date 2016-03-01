@@ -2,6 +2,7 @@ package it.progess.core.service;
 
 
 import it.progess.core.dao.ImportDao;
+import it.progess.core.dao.UserDao;
 import it.progess.core.hibernate.HibernateUtils;
 import it.progess.core.vo.User;
 import it.progess.core.vo.importvo.ImportCustomer;
@@ -9,6 +10,7 @@ import it.progess.core.vo.importvo.ImportProduct;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,20 +27,20 @@ public class ImportService {
 	@POST
 	@Path("products")
 	@Produces(MediaType.TEXT_HTML)
-	public String importProducts(@Context HttpServletRequest request,String data) {
+	public String importProducts(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid) {
 		ImportDao dao = new ImportDao();
 		Gson gson = new Gson();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		ImportProduct ip = gson.fromJson(data, ImportProduct.class);
 		return gson.toJson(dao.importProducts(context,ip, loggeduser));
 	}
 	@POST
 	@Path("customers")
 	@Produces(MediaType.TEXT_HTML)
-	public String importCustomers(@Context HttpServletRequest request,String data) {
+	public String importCustomers(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid) {
 		ImportDao dao = new ImportDao();
 		Gson gson = new Gson();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		ImportCustomer ic = gson.fromJson(data, ImportCustomer.class);
 		return gson.toJson(dao.importCustomers(context,ic, loggeduser));
 	}

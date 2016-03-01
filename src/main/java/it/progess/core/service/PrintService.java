@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -81,21 +82,21 @@ public class PrintService {
 	@GET
 	@Path("head/{idhead}")
 	@Produces(MediaType.TEXT_HTML)
-	public String singleHead(@PathParam("idhead") int id,@Context HttpServletRequest request) {
+	public String singleHead(@PathParam("idhead") int id,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
 		PrinterDao dao = new PrinterDao();
 		Gson gson = new Gson();
 		//DocumentDao dao = new DocumentDao();
 		//Head head = new Head();
 		//head = dao.getSingleHead(id);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.printSingleDocument(context, id,loggeduser));
 	}
 	@POST
 	@Path("heads")
 	@Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String multipleHeads(@FormParam("ids") String ids,@Context HttpServletRequest request) {
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+	public String multipleHeads(@FormParam("ids") String ids,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		PrinterDao dao = new PrinterDao();
 		Gson gson = new Gson();
 		//DocumentDao dao = new DocumentDao();
@@ -109,48 +110,48 @@ public class PrintService {
 	@Path("products")
 	@Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String printPrices(@Context HttpServletRequest request,@FormParam("filter") String filter) {
+	public String printPrices(@Context HttpServletRequest request,@FormParam("filter") String filter,@HeaderParam("UUID") String uuid) {
 		PrinterDao dao = new PrinterDao();
 		Gson gson = new Gson();
 		//DocumentDao dao = new DocumentDao();
 		//Head head = new Head();
 		//head = dao.getSingleHead(id);
 		SelectProductsFilter f = gson.fromJson(filter, SelectProductsFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.printProductList(context,f,loggeduser));
 	}
 	@POST
 	@Path("list/{code}")
 	@Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON) 
-	public String printList(@PathParam("code") String code,@Context HttpServletRequest request) {
+	public String printList(@PathParam("code") String code,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
 		PrinterDao dao = new PrinterDao();
 		Gson gson = new Gson();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.printList(context, code,loggeduser));
 	}
 	@GET
 	@Path("user/customer/list")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String getPriceListFromUser(@Context HttpServletRequest request){
+	public String getPriceListFromUser(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		PrinterDao dao = new PrinterDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getCustomerPriceListFromUser(context, loggeduser));
 	  }
 	@POST
 	@Path("customer/list/{code}")
 	@Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON) 
-	public String printCustomerList(@PathParam("code") String code,@Context HttpServletRequest request) {
+	public String printCustomerList(@PathParam("code") String code,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
 		PrinterDao dao = new PrinterDao();
 		Gson gson = new Gson();
 		//DocumentDao dao = new DocumentDao();
 		//Head head = new Head();
 		//head = dao.getSingleHead(id);
 		
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.printCustomerList(context, code,loggeduser));
 	}
 	@POST

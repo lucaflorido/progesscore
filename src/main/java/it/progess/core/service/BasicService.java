@@ -31,6 +31,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -46,21 +47,21 @@ public class BasicService {
 	@GET
 	@Path("taxrate")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String getTaxrateList(@Context HttpServletRequest request){
+	public String getTaxrateList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		BasicDao taxratedao = new BasicDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(taxratedao.getTaxRateList(loggeduser));
 	}
 	@PUT
 	@Path("taxrate")
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	public String saveTaxrates(@FormParam("taxrates") String taxrates,@Context HttpServletRequest request){
+	public String saveTaxrates(@FormParam("taxrates") String taxrates,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 	  Gson gson = new Gson();
 	  TaxRate[] taxratesarray = gson.fromJson(taxrates,TaxRate[].class);
 	  BasicDao taxratedao = new BasicDao();
-	  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 	  return gson.toJson(taxratedao.saveUpdatesTaxrate(taxratesarray,loggeduser));
 	}
 	/***
@@ -89,8 +90,8 @@ public class BasicService {
 	  @GET
 	  @Path("unitmeasure")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getUnitMeasureList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getUnitMeasureList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		return gson.toJson(dao.getUnitMeasureList(loggeduser));
@@ -99,8 +100,8 @@ public class BasicService {
 	  @Path("unitmeasure")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveUM(@FormParam("ums") String ums,@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String saveUM(@FormParam("ums") String ums,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  UnitMeasure[] umsarray = gson.fromJson(ums,UnitMeasure[].class);
 		  BasicDao dao = new BasicDao();
@@ -176,10 +177,10 @@ public class BasicService {
 	  @GET
 	  @Path("counter")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCounterList(@Context HttpServletRequest request){
+	  public String getCounterList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		if (loggeduser.getRole().getAdmin() == true && loggeduser.getCompany() == null){
 			return gson.toJson(dao.getCounterList());
 		}else{
@@ -200,10 +201,10 @@ public class BasicService {
 		@Path("countercompany")
 	    @Produces(MediaType.TEXT_PLAIN)
 	    @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-		public String saveCounterCompany(@FormParam("counters") String counters,@Context HttpServletRequest request){
+		public String saveCounterCompany(@FormParam("counters") String counters,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Counter[] smsarray = gson.fromJson(counters,Counter[].class);
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  BasicDao dao = new BasicDao();
 		  return gson.toJson(dao.saveUpdatesCounter(smsarray, loggeduser));
 		}
@@ -276,10 +277,10 @@ public class BasicService {
 	  @GET
 	  @Path("document")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getDocumentList(@Context HttpServletRequest request){
+	  public String getDocumentList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		if (loggeduser.getRole().getAdmin() == true && loggeduser.getCompany() == null){
 			return gson.toJson(dao.getDocumentList());
 		}else{
@@ -291,11 +292,11 @@ public class BasicService {
 	  @Path("document")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveDocument(@FormParam("documents") String documents,@Context HttpServletRequest request){
+	  public String saveDocument(@FormParam("documents") String documents,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Document[] smsarray = gson.fromJson(documents,Document[].class);
 		  BasicDao dao = new BasicDao();
-		  User user = HibernateUtils.getUserFromSession(request);
+		  User user = UserDao.getSingleUserVOByCode(uuid);
 		  if (user.getCompany() != null && user.getCompany().getIdCompany() != 0){
 			  return gson.toJson(dao.saveUpdatesDocument(smsarray,user));
 		  }
@@ -330,8 +331,8 @@ public class BasicService {
 	  @GET
 	  @Path("groupproduct")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getGroupProductList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getGroupProductList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		return gson.toJson(dao.getGroupProductList(loggeduser));
@@ -339,7 +340,7 @@ public class BasicService {
 	  @GET
 	  @Path("groupproduct/{key}")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getGroupProductList(@Context HttpServletRequest request,@PathParam("key") String key){
+	  public String getGroupProductList(@Context HttpServletRequest request,@PathParam("key") String key,@HeaderParam("UUID") String uuid){
 		User user = new User();
 		user.setCompany(new RegistryDao().getCompany(key));
 		Gson gson = new Gson();
@@ -349,8 +350,8 @@ public class BasicService {
 	  @GET
 	  @Path("groupproduct/prompt")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getGroupProductListPromt(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getGroupProductListPromt(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		return gson.toJson(dao.getGroupProductList(true,loggeduser));
@@ -359,8 +360,8 @@ public class BasicService {
 	  @Path("groupproduct")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveGroupProduct(@FormParam("groupproducts") String groupproducts,@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String saveGroupProduct(@FormParam("groupproducts") String groupproducts,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  GroupProduct[] smsarray = gson.fromJson(groupproducts,GroupProduct[].class);
 		  BasicDao dao = new BasicDao();
@@ -393,8 +394,8 @@ public class BasicService {
 	  @GET
 	  @Path("categoryproduct")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCategoryProductList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getCategoryProductList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  BasicDao dao = new BasicDao();
 		return gson.toJson(dao.getCategoryProductList(loggeduser));
@@ -402,7 +403,7 @@ public class BasicService {
 	  @GET
 	  @Path("categoryproduct/{key}")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCategoryProductList(@Context HttpServletRequest request,@PathParam("key") String key){
+	  public String getCategoryProductList(@Context HttpServletRequest request,@PathParam("key") String key,@HeaderParam("UUID") String uuid){
 		  User user = new User();
 		  Company c = new RegistryDao().getCompany(key);
 		  user.setCompany(c);
@@ -414,8 +415,8 @@ public class BasicService {
 	  @Path("categoryproduct")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveCategoryProduct(@FormParam("categoryproducts") String categoryproducts,@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String saveCategoryProduct(@FormParam("categoryproducts") String categoryproducts,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  CategoryProduct[] smsarray = gson.fromJson(categoryproducts,CategoryProduct[].class);
 		  BasicDao dao = new BasicDao();
@@ -474,8 +475,8 @@ public class BasicService {
 	  @GET
 	  @Path("categorycustomer")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCategoryCustomerList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getCategoryCustomerList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		
@@ -484,8 +485,8 @@ public class BasicService {
 	  @GET
 	  @Path("composition")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCompositionList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getCompositionList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		
@@ -495,22 +496,22 @@ public class BasicService {
 	  @Path("composition")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String saveComposition( String data,@Context HttpServletRequest request){
+	  public String saveComposition( String data,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Composition[] smsarray = gson.fromJson(data,Composition[].class);
 		  BasicDao dao = new BasicDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesComposition(smsarray,loggeduser));
 	  }
 	  @PUT
 	  @Path("categorycustomer")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveCategoryCustomer(@FormParam("categorycustomers") String categorycustomers,@Context HttpServletRequest request){
+	  public String saveCategoryCustomer(@FormParam("categorycustomers") String categorycustomers,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  CategoryCustomer[] smsarray = gson.fromJson(categorycustomers,CategoryCustomer[].class);
 		  BasicDao dao = new BasicDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesCategoryCustomer(smsarray,loggeduser));
 	  }
 		/***
@@ -542,8 +543,8 @@ public class BasicService {
 	  @GET
 	  @Path("groupcustomer")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getGroupCustomerList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getGroupCustomerList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		
@@ -553,11 +554,11 @@ public class BasicService {
 	  @Path("groupcustomer")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveGroupCustomer(@FormParam("groupcustomers") String groupcustomers,@Context HttpServletRequest request){
+	  public String saveGroupCustomer(@FormParam("groupcustomers") String groupcustomers,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  GroupCustomer[] smsarray = gson.fromJson(groupcustomers,GroupCustomer[].class);
 		  BasicDao dao = new BasicDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesGroupCustomer(smsarray,loggeduser));
 	  }
 		/***
@@ -677,8 +678,8 @@ public class BasicService {
 	  @GET
 	  @Path("brand")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getBrandList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getBrandListByUser(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		return gson.toJson(dao.getBrandList(loggeduser));
@@ -697,8 +698,8 @@ public class BasicService {
 	  @Path("brand")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveBrand(@FormParam("brands") String brands,@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String saveBrand(@FormParam("brands") String brands,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  Brand[] smsarray = gson.fromJson(brands,Brand[].class);
 		  BasicDao dao = new BasicDao();
@@ -732,8 +733,8 @@ public class BasicService {
 	  @GET
 	  @Path("region")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getRegionList(@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String getRegionList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Gson gson = new Gson();
 		BasicDao dao = new BasicDao();
 		return gson.toJson(dao.getRegionList(loggeduser));
@@ -741,7 +742,7 @@ public class BasicService {
 	  @GET
 	  @Path("region/{key}")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getRegionList(@Context HttpServletRequest request,@PathParam("key") String key){
+	  public String getRegionList(@Context HttpServletRequest request,@PathParam("key") String key,@HeaderParam("UUID") String uuid){
 		User user = new User();
 		user.setCompany(new RegistryDao().getCompany(key));
 		Gson gson = new Gson();
@@ -752,8 +753,8 @@ public class BasicService {
 	  @Path("region")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveRegion(@FormParam("regions") String regions,@Context HttpServletRequest request){
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String saveRegion(@FormParam("regions") String regions,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  Region[] smsarray = gson.fromJson(regions,Region[].class);
 		  BasicDao dao = new BasicDao();

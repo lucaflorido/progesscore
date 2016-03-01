@@ -6,12 +6,14 @@ import java.util.Set;
 
 import it.progess.core.dao.ExportDao;
 import it.progess.core.dao.PrinterDao;
+import it.progess.core.dao.UserDao;
 import it.progess.core.hibernate.HibernateUtils;
 import it.progess.core.vo.Head;
 import it.progess.core.vo.User;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -27,10 +29,10 @@ public class ExportService {
 	@POST
 	@Path("heads")
 	@Produces(MediaType.TEXT_HTML)
-	public String singleHead(@Context HttpServletRequest request,String data) {
+	public String singleHead(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid) {
 		ExportDao dao = new ExportDao();
 		Gson gson = new Gson();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Head[] headsArray = gson.fromJson(data, Head[].class);
 		return gson.toJson(dao.exportHeads(context,headsArray,loggeduser));
 	}

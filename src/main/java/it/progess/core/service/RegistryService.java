@@ -3,6 +3,7 @@ package it.progess.core.service;
 
 import it.progess.core.dao.DocumentDao;
 import it.progess.core.dao.RegistryDao;
+import it.progess.core.dao.UserDao;
 import it.progess.core.hibernate.HibernateUtils;
 import it.progess.core.vo.Company;
 import it.progess.core.vo.Bank;
@@ -33,6 +34,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -69,12 +71,13 @@ public class RegistryService {
 		return gson.toJson(dao.getCompanyList());
 	  }
 	  @GET
-	  @Path("company/{key}")
+	  @Path("company")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public String getCompany(@PathParam("key") String key){
+	  public String getCompany(@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		return gson.toJson(dao.getCompany(key));
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
+		return gson.toJson(dao.getCompany(loggeduser.getCompany().getCode()));
 	  }
 	  @POST
 	  @Path("company")
@@ -187,42 +190,42 @@ public class RegistryService {
 	  @Path("products")
  	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String getProductList(@Context HttpServletRequest request, String data){
+	  public String getProductList(@Context HttpServletRequest request, String data,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
 		SelectProductsFilter filter = gson.fromJson(data, SelectProductsFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getProductList(filter,loggeduser));
 	  }
 	  @POST
 	  @Path("productslistprice/{idlist}")
  	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String getProductListPrice(@Context HttpServletRequest request, String data,@PathParam("idlist") int idlist){
+	  public String getProductListPrice(@Context HttpServletRequest request, String data,@PathParam("idlist") int idlist,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
 		SelectProductsFilter filter = gson.fromJson(data, SelectProductsFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getProductListPrice(filter,loggeduser));
 	  }
 	  @POST
 	  @Path("public/products/{key}")
  	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String getProductPublicList(@Context HttpServletRequest request, String data,@PathParam("key") String key){
+	  public String getProductPublicList(@Context HttpServletRequest request, String data,@PathParam("key") String key,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
 		SelectProductsFilter filter = gson.fromJson(data, SelectProductsFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getProductPublicList(filter,key));
 	  }
 	  @GET
 	  @Path("product")
  	  @Produces(MediaType.TEXT_HTML)
-	  public String getProductList(@Context HttpServletRequest request){
+	  public String getProductList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getProductList(loggeduser));
 	  }
 	  @POST
@@ -231,7 +234,7 @@ public class RegistryService {
 	  public String getProductPublicList(String data,@PathParam("key") String key){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		//User loggeduser = HibernateUtils.getUserFromSession(request);
+		//User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		SelectProductsFilter sf = gson.fromJson(data, SelectProductsFilter.class);
 		return gson.toJson(dao.getProductPublicList(sf,key));
 	  }
@@ -239,20 +242,20 @@ public class RegistryService {
 	  @Path("product/pages/{size}")
 	  @Produces(MediaType.TEXT_HTML)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	  public String productPages(@Context HttpServletRequest request,@PathParam("size") int size) {
+	  public String productPages(@Context HttpServletRequest request,@PathParam("size") int size,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getListPagesNumber(size,loggeduser));
 	  }
 	  @POST
 	  @Path("product/pages/{size}")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON)
-	  public String productPages(@Context HttpServletRequest request,@PathParam("size") int size,String data) {
+	  public String productPages(@Context HttpServletRequest request,@PathParam("size") int size,String data,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		SelectProductsFilter sf = gson.fromJson(data, SelectProductsFilter.class);
 		return gson.toJson(dao.getListPagesNumberPrice(size,loggeduser,sf));
 	  }
@@ -260,10 +263,10 @@ public class RegistryService {
 	  @Path("public/product/pages/{size}/{key}")
 	  @Produces(MediaType.TEXT_HTML)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	  public String productPublicPages(@Context HttpServletRequest request,@PathParam("size") int size,@PathParam("key") String key) {
+	  public String productPublicPages(@Context HttpServletRequest request,@PathParam("size") int size,@PathParam("key") String key,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getListPublicPagesNumber(size,key));
 	  }
 	  @GET
@@ -295,19 +298,19 @@ public class RegistryService {
 	  @GET
 	  @Path("product/search/{value}")
 	  @Produces(MediaType.TEXT_HTML)
-	  public String searchProducts(@Context HttpServletRequest request,@PathParam("value") String value) {
+	  public String searchProducts(@Context HttpServletRequest request,@PathParam("value") String value,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.searchProducts(value,loggeduser));
 	  }
 	  @POST
 	  @Path("product/search/{value}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public String searchProductsHead(@Context HttpServletRequest request,@PathParam("value") String value,String data) {
+	  public String searchProductsHead(@Context HttpServletRequest request,@PathParam("value") String value,String data,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Head h = gson.fromJson(data, Head.class);
 		return gson.toJson(dao.searchProducts(value,h,loggeduser));
 	  }
@@ -315,22 +318,22 @@ public class RegistryService {
 	  @Path("product/filtered/")
 	  @Produces(MediaType.TEXT_HTML)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	  public String getFilteredProductsList(@Context HttpServletRequest request,@FormParam("filter") String filter) {
+	  public String getFilteredProductsList(@Context HttpServletRequest request,@FormParam("filter") String filter,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
 		SelectProductsFilter f = gson.fromJson(filter, SelectProductsFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getProductFilteredList(f,loggeduser));
 	  }
 	  @POST
 	  @Path("product/increment/")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON)
-	  public String incrementProductsList(@Context HttpServletRequest request, String data) {
+	  public String incrementProductsList(@Context HttpServletRequest request, String data,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
 		SelectProductsFilter f = gson.fromJson(data, SelectProductsFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.calculateIncrementProducts(f,loggeduser));
 	  }
 	  /***
@@ -339,12 +342,12 @@ public class RegistryService {
 	  @POST
 	  @Path("product/code/{code}/{idlist}")
 	  @Produces(MediaType.TEXT_HTML)
-	  public String singleCodeProduct(@Context HttpServletRequest request,@PathParam("code") String code,@PathParam("idlist") int idlist,@FormParam("head") String head) {
+	  public String singleCodeProduct(@Context HttpServletRequest request,@PathParam("code") String code,@PathParam("idlist") int idlist,@FormParam("head") String head,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
 		Product product = new Product();
 		Head headToSet = gson.fromJson(head, Head.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		product = dao.getSingleCodeProduct(code,idlist,headToSet,loggeduser);
 		
 		return gson.toJson(product);
@@ -353,11 +356,11 @@ public class RegistryService {
 	  @Path("product")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String saveProduct(@Context HttpServletRequest request, String data){
+	  public String saveProduct(@Context HttpServletRequest request, String data,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Product sms = gson.fromJson(data,Product.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesProduct(sms,loggeduser));
 	  }
 		/***
@@ -415,20 +418,20 @@ public class RegistryService {
 	   */
 	  @GET
 	  @Path("list")
- 	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getListList(@Context HttpServletRequest request){
+ 	  @Produces(MediaType.APPLICATION_JSON)
+	  public String getListList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getListList( loggeduser));
 	  }
 	  @POST
 	  @Path("list/noproduct")
- 	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getListNoProduct(@Context HttpServletRequest request,@FormParam("product") String product){
+ 	  @Produces(MediaType.APPLICATION_JSON)
+	  public String getListNoProduct(@Context HttpServletRequest request,@FormParam("product") String product,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		Product p = gson.fromJson(product, Product.class);
 		return gson.toJson(dao.getListListNoProduct( loggeduser,p));
 	  }
@@ -437,7 +440,7 @@ public class RegistryService {
     */
 	  @GET
 	  @Path("list/{idlist}")
-	  @Produces(MediaType.TEXT_HTML)
+	  @Produces(MediaType.APPLICATION_JSON)
 	  public String singleList(@PathParam("idlist") int id) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
@@ -447,7 +450,7 @@ public class RegistryService {
 	  }
 	  @GET
 	  @Path("list/public/{key}")
-	  @Produces(MediaType.TEXT_HTML)
+	  @Produces(MediaType.APPLICATION_JSON)
 	  public String singlePublicList(@PathParam("key") String key) {
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
@@ -458,8 +461,8 @@ public class RegistryService {
 	  @POST
 	  @Path("list/{idlist}")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public String singleListFiltered(@PathParam("idlist") int id,String data,@Context HttpServletRequest request) {
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String singleListFiltered(@PathParam("idlist") int id,String data,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  RegistryDao dao = new RegistryDao();
 		  List list = new List();
@@ -471,8 +474,8 @@ public class RegistryService {
 	  @Path("addtolist/{idlist}")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON)
-	  public String addProductsToListFiltered(@PathParam("idlist") int id,String data,@Context HttpServletRequest request) {
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String addProductsToListFiltered(@PathParam("idlist") int id,String data,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  RegistryDao dao = new RegistryDao();
 		  SelectProductsFilter filter = gson.fromJson(data, SelectProductsFilter.class);
@@ -480,13 +483,13 @@ public class RegistryService {
 	  }
 	  @PUT
 	  @Path("list")
-	  @Produces(MediaType.TEXT_PLAIN)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveList(@Context HttpServletRequest request,@FormParam("lists") String list){
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String saveList(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
-		  NewList sms = gson.fromJson(list,NewList.class);
+		  NewList sms = gson.fromJson(data,NewList.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesList(sms, loggeduser));
 	  }
 		/***
@@ -495,12 +498,12 @@ public class RegistryService {
 
 	  @DELETE
 	  @Path("list")
-	  @Produces(MediaType.TEXT_PLAIN)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String deleteList(@FormParam("listobj") String listobj){
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String deleteList( String data){
 		  Gson gson = new Gson();
 		  try{
-			  List sm = gson.fromJson(listobj,List.class);
+			  List sm = gson.fromJson(data,List.class);
 			  RegistryDao dao = new RegistryDao();
 			  dao.deleteList(sm);
 			  return gson.toJson(true);
@@ -525,48 +528,48 @@ public class RegistryService {
 	  @GET
 	  @Path("customer")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCustomerList(@Context HttpServletRequest request){
+	  public String getCustomerList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = new UserDao().getSingleUserVO(uuid); //UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getCustomerList(loggeduser));
 	  }
 	  @GET
 	  @Path("customerwithpricelist")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCustomerListWithPriceList(@Context HttpServletRequest request){
+	  public String getCustomerListWithPriceList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getCustomerListWithPriceList(loggeduser));
 	  }
 	  @GET
 	  @Path("customersoft")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCustomerSoftList(@Context HttpServletRequest request){
+	  public String getCustomerSoftList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getCustomerSoftList(loggeduser));
 	  }
 	  @GET
 	  @Path("customersoftwithlist")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getCustomerSoftListWithList(@Context HttpServletRequest request){
+	  public String getCustomerSoftListWithList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getCustomerSoftListNoPriceList(loggeduser));
 	  }
 	  @POST
 	  @Path("customer")
- 	  @Produces(MediaType.TEXT_PLAIN)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String getCustomerListSelected(@Context HttpServletRequest request,@FormParam("filter") String filter){
+ 	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String getCustomerListSelected(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		SelectCustomerList filterObj = gson.fromJson(filter, SelectCustomerList.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		SelectCustomerList filterObj = gson.fromJson(data, SelectCustomerList.class);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getCustomerList(filterObj,loggeduser));
 	  }
 	  
@@ -587,32 +590,32 @@ public class RegistryService {
 	  @Path("customer/user")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String createUserCustomer(@Context HttpServletRequest request,String data){
+	  public String createUserCustomer(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  UserCustomer sms = gson.fromJson(data,UserCustomer.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.createUserCustomer(loggeduser,sms,request));
 	  }
 	  @GET
 	  @Path("customer/user")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String getCustomerFromUser(@Context HttpServletRequest request){
+	  public String getCustomerFromUser(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.getCustomerFromUserWizard(loggeduser));
 	  }
 	  @PUT
 	  @Path("customer")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String saveCustomer(@Context HttpServletRequest request, String data){
+	  public String saveCustomer(@Context HttpServletRequest request, String data,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Customer sms = gson.fromJson(data,Customer.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesCustomer(sms,loggeduser));
 	  }
 		/***
@@ -812,12 +815,12 @@ public class RegistryService {
 	  @Path("transporter/user")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String createUserTransporter(@Context HttpServletRequest request,@FormParam("transporters") String transporter,@FormParam("role") String role){
+	  public String createUserTransporter(@Context HttpServletRequest request,@FormParam("transporters") String transporter,@FormParam("role") String role,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Transporter sms = gson.fromJson(transporter,Transporter.class);
 		  Role r = gson.fromJson(role,Role.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.createUserTransporter(sms,loggeduser,r));
 	  }
 		/***
@@ -844,10 +847,10 @@ public class RegistryService {
 	  @GET
 	  @Path("promoter")
  	  @Produces(MediaType.TEXT_PLAIN)
-	  public String getPromoterList(@Context HttpServletRequest request){
+	  public String getPromoterList(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid){
 		Gson gson = new Gson();
 		RegistryDao dao = new RegistryDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getPromoterList(loggeduser));
 	  }
 	  @GET
@@ -865,11 +868,11 @@ public class RegistryService {
 	  @Path("promoter")
 	  @Produces(MediaType.TEXT_PLAIN)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String savePromoter(@Context HttpServletRequest request,@FormParam("promoters") String promoter){
+	  public String savePromoter(@Context HttpServletRequest request,@FormParam("promoters") String promoter,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  Promoter sms = gson.fromJson(promoter,Promoter.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.saveUpdatesPromoter(sms,loggeduser));
 	  }
 		/***
@@ -895,11 +898,11 @@ public class RegistryService {
 	  @Path("promoter/user")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String createUserPromoter(@Context HttpServletRequest request,String data){
+	  public String createUserPromoter(@Context HttpServletRequest request,String data,@HeaderParam("UUID") String uuid){
 		  Gson gson = new Gson();
 		  UserPromoter up = gson.fromJson(data,UserPromoter.class);
 		  RegistryDao dao = new RegistryDao();
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  return gson.toJson(dao.createUserPromoter(loggeduser,up,request));
 	  }
 

@@ -70,6 +70,7 @@ public class HibernateUtils {
 	}
 	public static User getUserFromSession (HttpServletRequest request){
 		HttpSession session = request.getSession();  
+	    
 		String user = "";
 		if (session.getAttribute("user") != null){
 		   user = session.getAttribute("user").toString();	
@@ -84,6 +85,7 @@ public class HibernateUtils {
 		User loggeduser = gson.fromJson(user, User.class);
 		return loggeduser;
 	}
+	
 	public static float roundfloat(float a){
 		float b = Math.round(a*100.0f)/100.0f;
 		return b;

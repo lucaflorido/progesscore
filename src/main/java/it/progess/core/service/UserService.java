@@ -1,9 +1,18 @@
 package it.progess.core.service;
 
+import java.util.UUID;
+
 import it.progess.core.dao.UserDao;
 import it.progess.core.hibernate.HibernateUtils;
 import it.progess.core.pojo.TblUser;
+import it.progess.core.vo.GECOError;
+import it.progess.core.vo.GECOSuccess;
 import it.progess.core.vo.User;
+
+
+
+
+
 
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +21,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -24,14 +34,14 @@ import com.google.gson.Gson;
 
 @Path("user")
 public class UserService {
+	
 	/***
 	 * List of users 
 	 */
 	  @GET
 	  @Produces(MediaType.TEXT_PLAIN)
-	  public String userList(@Context HttpServletRequest request) {
-		HttpSession session = request.getSession();  
-		String user = session.getAttribute("user").toString();
+	  public String userList(@HeaderParam("UUID") String uuid) {
+		String user = UserDao.getSingleUserVOByCode(uuid).toString();
 		System.out.println("USER: "+user);
 		Gson gson = new Gson();
 		UserDao userdao = new UserDao();
@@ -55,9 +65,9 @@ public class UserService {
 	  @GET
 	  @Path("loggedinuser")
 	  @Produces(MediaType.APPLICATION_JSON)
-	  public String userloggedin(@Context HttpServletRequest request) {
+	  public String userloggedin(@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
 		Gson gson = new Gson();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(loggeduser);
 	  }
 	  /***
@@ -78,9 +88,13 @@ public class UserService {
 	  @POST
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String checkCredentials( String data,@Context HttpServletRequest request){
+	  public String checkCredentials(@HeaderParam("UUID") String uuid, String data,@Context HttpServletRequest request){
+		  System.out.print(uuid);
 		  HttpSession session = request.getSession();
 		  Gson gson = new Gson();
+		 /* if (uuid.equals(session.getAttribute("key").toString()) == false){
+			  return gson.toJson(new GECOError("Sessione","sessione scaduta"));
+		  }*/
 		  User user = gson.fromJson(data,User.class);
 		  UserDao userdao = new UserDao();
 		  return gson.toJson(userdao.checkCredentials(user.getUsername(), user.getPassword(),session,false));
@@ -223,4 +237,5 @@ public class UserService {
 		  UserDao userdao = new UserDao();
 		  return gson.toJson(userdao.passwordECForgotten(data, key,request));
 	  }
+	  
 }

@@ -1,6 +1,7 @@
 package it.progess.core.service;
 
 import it.progess.core.dao.MailDao;
+import it.progess.core.dao.UserDao;
 import it.progess.core.hibernate.HibernateUtils;
 import it.progess.core.vo.GECOObject;
 import it.progess.core.vo.Head;
@@ -11,6 +12,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -39,8 +41,8 @@ public class MailService {
 	  @Path("document")
 	  @Produces(MediaType.TEXT_HTML)
 	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String documentSend(@FormParam("head") String head,@FormParam("user") String user,@FormParam("mailconfig") String mailconfig,@Context HttpServletRequest request) {
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+	  public String documentSend(@FormParam("head") String head,@FormParam("user") String user,@FormParam("mailconfig") String mailconfig,@Context HttpServletRequest request,@HeaderParam("UUID") String uuid) {
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  Gson gson = new Gson();
 		  User userobj = gson.fromJson(user, User.class);
 		  Head headobj = gson.fromJson(head, Head.class);

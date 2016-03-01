@@ -186,11 +186,11 @@ public class Company implements Ivo {
 				er = new GECOError(GECOParameter.ERROR_WRONG_SIZE,"Partita iva non conforme");
 			}
 		}
-		if (this.bankcontact == null){
+		/*if (this.bankcontact == null){
 			er = new GECOError(GECOParameter.ERROR_VALUE_MISSING,"Dati Bancari mancanti");
 		}else if (this.bankcontact.control() != null){
 			er = (GECOError)this.bankcontact.control();
-		}
+		}*/
 		
 		return er;
 	}

@@ -1,11 +1,8 @@
 package it.progess.core.service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import it.progess.core.dao.DocumentDao;
+import it.progess.core.dao.UserDao;
 import it.progess.core.exception.GecoException;
-import it.progess.core.hibernate.HibernateUtils;
 import it.progess.core.vo.AddRowToHead;
 import it.progess.core.vo.GECOObject;
 import it.progess.core.vo.GenerateDocsObject;
@@ -16,11 +13,29 @@ import it.progess.core.vo.User;
 import it.progess.core.vo.filter.GenerateDocsFilter;
 import it.progess.core.vo.filter.HeadFilter;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -41,22 +56,22 @@ public class DocumentService {
 	  @Path("pages/{size}")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON)
-	  public String pages(@Context HttpServletRequest request,@PathParam("size") int size, String data) {
+	  public String pages(@HeaderParam("UUID") String uuid,@PathParam("size") int size, String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
 		HeadFilter filterDoc = gson.fromJson(data,HeadFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getPagesNumber(size,filterDoc,loggeduser));
 	  }
 	  @POST
 	  @Path("head")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String getHeadList(@Context HttpServletRequest request, String data){
+	  public String getHeadList(@HeaderParam("UUID") String uuid, String data){
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
 		HeadFilter filterDoc = gson.fromJson(data,HeadFilter.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.getHeadList(filterDoc,loggeduser));
 	  }
 	  /***
@@ -64,7 +79,7 @@ public class DocumentService {
   */
 	  @GET
 	  @Path("head/{idhead}")
-	  @Produces(MediaType.TEXT_HTML)
+	  @Produces(MediaType.APPLICATION_JSON)
 	  public String singleHead(@PathParam("idhead") int id) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
@@ -74,14 +89,14 @@ public class DocumentService {
 	  }
 	  @PUT
 	  @Path("head")
-	  @Produces(MediaType.TEXT_PLAIN)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveHead(@Context HttpServletRequest request,@FormParam("heads") String head){
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String saveHead(@HeaderParam("UUID") String uuid,String data){
 		  Gson gson = new Gson();
-		  Head sms = gson.fromJson(head,Head.class);
+		  Head sms = gson.fromJson(data,Head.class);
 		  DocumentDao dao = new DocumentDao();
 		  GECOObject ge = null;
-		  User loggeduser = HibernateUtils.getUserFromSession(request);
+		  User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		  try{
 			   ge = dao.saveUpdatesHead(sms,loggeduser);
 		  }catch(GecoException e){
@@ -94,12 +109,12 @@ public class DocumentService {
 	   */
 	  @DELETE
 	  @Path("head")
-	  @Produces(MediaType.TEXT_PLAIN)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String deleteHead(@FormParam("headobj") String headobj){
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String deleteHead(String data){
 		  Gson gson = new Gson();
 		  try{
-			  Head sm = gson.fromJson(headobj,Head.class);
+			  Head sm = gson.fromJson(data,Head.class);
 			  DocumentDao dao = new DocumentDao();
 			  dao.deleteHead(sm);
 			  return gson.toJson(true);
@@ -109,61 +124,61 @@ public class DocumentService {
 	  }
 	  @POST
 	  @Path("generationdocs/filterdocs")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String singleHead(@FormParam("filter") String filter) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String singleHead(String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		GenerateDocsFilter filterDoc = gson.fromJson(filter,GenerateDocsFilter.class);
+		GenerateDocsFilter filterDoc = gson.fromJson(data,GenerateDocsFilter.class);
 		return gson.toJson(dao.getHeadRowsGenerateList(filterDoc));
 	  }
 	  @POST
 	  @Path("generationdocs/objectdocs")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String generateHeads(@Context HttpServletRequest request,String data) {
+	  public String generateHeads(@HeaderParam("UUID") String uuid,String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
 		GenerateDocsObject generateDoc = gson.fromJson(data,GenerateDocsObject.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.createHeadRowsGenerateList(generateDoc,loggeduser));
 	  }
 	  @POST
 	  @Path("copyrows/objectdocs")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String copyRows(@Context HttpServletRequest request,@FormParam("generateobj") String generateobj) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String copyRows(@HeaderParam("UUID") String uuid,String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		GenerateDocsObject generateDoc = gson.fromJson(generateobj,GenerateDocsObject.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		GenerateDocsObject generateDoc = gson.fromJson(data,GenerateDocsObject.class);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.copyHeadRows(generateDoc,loggeduser));
 	  }
 	  @POST
 	  @Path("createorders")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String createDailyOrders(@Context HttpServletRequest request,@FormParam("orders") String generateobj) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String createDailyOrders(@HeaderParam("UUID") String uuid,String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		GenerateObject generateDoc = gson.fromJson(generateobj,GenerateObject.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		GenerateObject generateDoc = gson.fromJson(data,GenerateObject.class);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.createDailyOrder(generateDoc,loggeduser));
 	  }
 	  @POST
 	  @Path("fillserialnumber/{idhead}")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String fillSerialNumber(@Context HttpServletRequest request,@PathParam("idhead") int idhead) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String fillSerialNumber(@HeaderParam("UUID") String uuid,@PathParam("idhead") int idhead) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.fillSerialNumbers(idhead,loggeduser));
 	  }
 	  @POST
 	  @Path("serialnumberList/{idhead}")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
 	  public String getSerialNumberRows(@PathParam("idhead") int idhead) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
@@ -171,51 +186,51 @@ public class DocumentService {
 	  }
 	  @POST
 	  @Path("copyrowserialnumber/")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String copyRow(@FormParam("row") String rowStr) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String copyRow( String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		Row r = gson.fromJson(rowStr, Row.class);
+		Row r = gson.fromJson(data, Row.class);
 		return gson.toJson(dao.copyRowSerialNumber(r));
 	  }
 	  @PUT
 	  @Path("saverowsserialnumber/{idhead}")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String saveRowsSerialNumber(@Context HttpServletRequest request,@FormParam("row") String rowStr,@PathParam("idhead") int idhead) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String saveRowsSerialNumber(@HeaderParam("UUID") String uuid,String data,@PathParam("idhead") int idhead) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		Row[] r = gson.fromJson(rowStr, Row[].class);
+		Row[] r = gson.fromJson(data, Row[].class);
 		HashSet<Row> rs = new HashSet<Row>();
 		rs.addAll(Arrays.asList(r));
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.saveSerialNumbersRows(idhead, rs,loggeduser));
 	  }
 	  @POST
 	  @Path("createreport")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String createReport(@FormParam("filter") String filter) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String createReport(String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		GenerateObject r = gson.fromJson(filter, GenerateObject.class);
+		GenerateObject r = gson.fromJson(data, GenerateObject.class);
 		return gson.toJson(dao.getOrderReport(r));
 	  }
 	  @POST
 	  @Path("checkhead")
-	  @Produces(MediaType.TEXT_HTML)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
-	  public String checkHead(@FormParam("head") String headfilter) {
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
+	  public String checkHead(String data) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
-		Head h = gson.fromJson(headfilter, Head.class);
+		Head h = gson.fromJson(data, Head.class);
 		return gson.toJson(dao.headValidation(h));
 	  }
 	  @DELETE
 	  @Path("removerow/{idrow}")
-	  @Produces(MediaType.TEXT_PLAIN)
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) 
+	  @Produces(MediaType.APPLICATION_JSON)
+	  @Consumes(MediaType.APPLICATION_JSON) 
 	  public String deleteRow(@PathParam("idrow") int id){
 		  Gson gson = new Gson();
 		  try{
@@ -239,11 +254,11 @@ public class DocumentService {
 	  @Path("addrow/{type}")
 	  @Produces(MediaType.APPLICATION_JSON)
 	  @Consumes(MediaType.APPLICATION_JSON) 
-	  public String saveWizardHead(@Context HttpServletRequest request,String data,@PathParam("type") String type) {
+	  public String saveWizardHead(@HeaderParam("UUID") String uuid,String data,@PathParam("type") String type) {
 		Gson gson = new Gson();
 		DocumentDao dao = new DocumentDao();
 		Head h = gson.fromJson(data,Head.class);
-		User loggeduser = HibernateUtils.getUserFromSession(request);
+		User loggeduser = UserDao.getSingleUserVOByCode(uuid);
 		return gson.toJson(dao.saveWizardHead(loggeduser, h,type));
 	  }
 }

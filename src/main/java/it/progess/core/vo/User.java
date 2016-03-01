@@ -27,6 +27,14 @@ public class User {
 	private String oldpassword;
 	private String confirmpassword;
 	private Address deliveryaddress;
+	private String token;
+	
+	public String getToken() {
+		return token;
+	}
+	public void setToken(String token) {
+		this.token = token;
+	}
 	public String getOldpassword() {
 		return oldpassword;
 	}
